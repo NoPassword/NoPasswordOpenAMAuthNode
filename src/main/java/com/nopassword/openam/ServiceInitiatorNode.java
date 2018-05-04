@@ -18,27 +18,27 @@
  */
 package com.nopassword.openam;
 
-import com.nopassword.openam.utils.AuthHelper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.assistedinject.Assisted;
+import com.nopassword.common.crypto.NPCipher;
+import com.nopassword.common.model.AuthRequest;
+import com.nopassword.common.model.AuthResult;
+import com.nopassword.common.utils.Authentication;
 import com.sun.identity.idm.AMIdentity;
 import com.sun.identity.shared.debug.Debug;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import org.forgerock.openam.annotations.sm.Attribute;
 import org.forgerock.openam.auth.node.api.*;
-import org.forgerock.openam.authentication.callbacks.PollingWaitCallback;
 import org.forgerock.openam.core.CoreWrapper;
-import org.forgerock.openam.utils.Time;
 
 import javax.inject.Inject;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import org.forgerock.json.JsonValue;
-
-import static org.forgerock.openam.auth.node.api.Action.send;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import static org.forgerock.openam.auth.node.api.SharedStateConstants.REALM;
 import static org.forgerock.openam.auth.node.api.SharedStateConstants.USERNAME;
 
@@ -46,8 +46,17 @@ import static org.forgerock.openam.auth.node.api.SharedStateConstants.USERNAME;
  * An authentication node integrating with iProov face recognition solution.
  */
 @Node.Metadata(outcomeProvider = AbstractDecisionNode.OutcomeProvider.class,
-        configClass = NoPasswordNode.Config.class)
-public class NoPasswordNode extends AbstractDecisionNode {
+        configClass = ServiceInitiatorNode.Config.class)
+public class ServiceInitiatorNode extends AbstractDecisionNode {
+
+    private final Config config;
+    private final CoreWrapper coreWrapper;
+    private final static String DEBUG_FILE_NAME = ServiceInitiatorNode.class.getSimpleName();
+    private final Debug DEBUG = Debug.getInstance(DEBUG_FILE_NAME);
+    public static final String ASYNC_AUTH_URL = AuthHelper.BASE_URL + "v2/ID/Login/Async";
+    public static final String ASYNC_LOGIN_TOKEN = "AsyncLoginToken";
+    public static final String AES_KEY = "aesKey";
+    public static final String AES_IV = "aesIV";
 
     /**
      * Configuration for the node.
@@ -57,17 +66,13 @@ public class NoPasswordNode extends AbstractDecisionNode {
         @Attribute(order = 100)
         String genericAPIkey();
 
-    }
+        @Attribute(order = 200)
+        String aesKey();
 
-    private final Config config;
-    private final CoreWrapper coreWrapper;
-    private final static String DEBUG_FILE_NAME = "NoPasswordNode";
-    protected Debug DEBUG = Debug.getInstance(DEBUG_FILE_NAME);
-    private static final String TIMEOUT = "60000";
-    private static final String TIMEWAIT = "2000";
-    private static final String START = "start";
-    private static final String FUTURE = "future";
-    private static final String AUTH_URL = "https://api.nopassword.com/v2/ID";
+        @Attribute(order = 300)
+        String aesIV();
+
+    }
 
     /**
      * Guice constructor.
@@ -78,7 +83,7 @@ public class NoPasswordNode extends AbstractDecisionNode {
      * configuration.
      */
     @Inject
-    public NoPasswordNode(@Assisted Config config, CoreWrapper coreWrapper) throws NodeProcessException {
+    public ServiceInitiatorNode(@Assisted Config config, CoreWrapper coreWrapper) throws NodeProcessException {
         this.config = config;
         this.coreWrapper = coreWrapper;
     }
@@ -93,7 +98,7 @@ public class NoPasswordNode extends AbstractDecisionNode {
                         context.sharedState.get(REALM).asString());
 
         if (userIdentity == null) {
-            DEBUG.message("user not found: " + username);
+            DEBUG.error("user not found: " + username);
             return goTo(false).build();
         }
 
@@ -110,7 +115,7 @@ public class NoPasswordNode extends AbstractDecisionNode {
                 emailSet = (HashSet) attrs.get("email");
 
                 if (emailSet.isEmpty()) {
-                    DEBUG.message("user email not found: " + username);
+                    DEBUG.error("user email not found: " + username);
                     return goTo(false).build();
                 }
 
@@ -121,10 +126,15 @@ public class NoPasswordNode extends AbstractDecisionNode {
             return goTo(false).build();
         }
 
-        if (AuthHelper.authenticateUser(email, AUTH_URL, config.genericAPIkey())) {
-            return goTo(true).build();
-        } else {
-            return goTo(false).build();
-        }
+        AuthRequest request = new AuthRequest(null, email, null);
+        byte[] aesKey = Base64.getDecoder().decode(config.aesKey());
+        byte[] aesIV = Base64.getDecoder().decode(config.aesIV());
+        NPCipher cipher = new NPCipher(aesKey, aesIV, StandardCharsets.UTF_16LE);
+        AuthResult result = Authentication.authenticateUserAsync(ASYNC_AUTH_URL, request, cipher);
+        DEBUG.message(result.toString());
+        context.sharedState.add(ASYNC_LOGIN_TOKEN, result.getAsyncLoginToken());
+        context.sharedState.add(AES_KEY, config.aesKey());
+        context.sharedState.add(AES_IV, config.aesIV());
+        return goTo(true).build();
     }
 }

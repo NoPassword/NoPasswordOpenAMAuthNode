@@ -59,7 +59,8 @@ public class NoPasswordNodePlugin extends AbstractNodeAmPlugin {
     @Override
     protected Iterable<? extends Class<? extends Node>> getNodes() {
         return asList(
-                NoPasswordNode.class
+                ServiceInitiatorNode.class,
+                ServiceDecisionNode.class
         );
     }
 }

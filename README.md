@@ -9,7 +9,7 @@ This document assumes that you already have an AM 5.5+ instance running with an 
 
 Follow this steps in order to install the node:
 
-1. Download the jar file from [here](target/nopassword-openam-auth-node-1.0.jar).
+1. Download the jar file from [here](target/nopassword-openam-auth-node-1.0.jar). If you prefer to compile the project from sources then you'll have to install nopassword-commons dependency first with maven which can be downloaded [here](https://github.com/NoPasswordRepo/nopassword-commons.git).
 2. Copy the **nopassword-openam-auth-node-1.0.jar** file on your server: `/path/to/tomcat/webapps/openam/WEB-INF/lib`
 3. Restart AM.
 4. Login into NoPassword admin portal and open the `Keys` menu on the left side. Copy the **Generic API**, **AES Key** and **AES IV** values by clicking in the green button and save it for later.
@@ -42,5 +42,3 @@ Follow this steps in order to install the node:
 16. Enter your username and hit enter. An authentication request will be send to NoPassword through the AM authentication tree. NoPassword will verify you username and key. If everything is correct you should get an authentication request on your phone.
 
 ![image](/images/demo_auth.png)
-
-**Note:** If you wish to compile the project from sources then you'll have to install nopassword-commons dependency with maven which can be downloaded [here](https://github.com/NoPasswordRepo/nopassword-commons.git).

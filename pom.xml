@@ -41,11 +41,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.nopassword</groupId>
-            <artifactId>commons</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
             <groupId>org.forgerock.am</groupId>
             <artifactId>openam-core</artifactId>
             <version>6.0.0-M14</version>
@@ -103,19 +98,6 @@
                         <goals>
                             <goal>integration-test</goal>
                             <goal>verify</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
                         </goals>
                     </execution>
                 </executions>

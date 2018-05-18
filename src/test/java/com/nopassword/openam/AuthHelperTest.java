@@ -36,7 +36,8 @@ public class AuthHelperTest {
 
         Assert.assertNotEquals(request.get(Constants.USERNAME).length(), 0);
         Assert.assertEquals(request.get(Constants.API_KEY).length(), 36);
-        Assert.assertEquals(request.get(Constants.COMMAND), Constants.USER_STATUS);
+        Assert.assertNotNull(request.get(Constants.BROWSER_ID));
+        Assert.assertNotNull(request.get(Constants.DEVICE_NAME));
     }
 
     @Test

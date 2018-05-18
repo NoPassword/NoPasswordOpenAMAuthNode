@@ -29,6 +29,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 /**
@@ -37,9 +38,22 @@ import java.util.regex.Pattern;
  */
 public class AuthHelper {
 
-    public static final String BASE_URL = "https://testapi.nopassword.com/";
+    public static final String BASE_URL = "https://api.nopassword.com";
     private static final Debug DEBUG = Debug.getInstance("AuthHelper");
     private static final Pattern API_KEY_REGEX = Pattern.compile("[a-z0-9-]{36,36}");
+
+    public static enum AuthStatus {
+
+        Alert,
+        Denied,
+        Failure,
+        InvalidUser,
+        NoResponse,
+        Success,
+        UnpairedUser,
+        WaitingForResponse;
+
+    }
 
     /**
      * Pure JSE REST client
@@ -55,6 +69,7 @@ public class AuthHelper {
     public static <T> T doPost(String url, Object o, Class<T> resultType) throws MalformedURLException, IOException {
         ObjectMapper mapper = new ObjectMapper();
         String payload = mapper.writeValueAsString(o);
+        DEBUG.message("Request payload=" + payload);
         URL urlx = new URL(url);
         HttpURLConnection conn = (HttpURLConnection) urlx.openConnection();
         conn.setDoOutput(true);
@@ -76,24 +91,25 @@ public class AuthHelper {
         return mapper.readValue(input.toString(), resultType);
     }
 
-    public static boolean authenticateUser(String username, String authURL, String genericAPIKey) {
+    public static Map<String, Object> authenticateUser(String username, String authURL, String genericAPIKey) {
+        Map result = null;
         try {
             Map request = makeAuthRequest(username, genericAPIKey);
-            Map<String, String> response = doPost(authURL, request, Map.class);
-            boolean result = Constants.SUCCESS.equals(response.get(Constants.AUTH_STATUS));
-            if (!result) {
-                DEBUG.message(
-                        String.format("User authentication failed - %s: %s",
-                                username, response.get(Constants.AUTH_STATUS)));
+            result = doPost(authURL, request, Map.class);
+
+            if ((boolean) result.get(Constants.SUCCEEDED)) {
+                return (Map) result.get(Constants.VALUE);
+            } else {
+                DEBUG.error((String) result.get(Constants.MESSAGE));
             }
-            return result;
         } catch (IOException ex) {
-            DEBUG.message("Error authenticating user: " + username, ex);
-            return false;
-        } catch(IllegalArgumentException ex) {
-            DEBUG.message("invalid authentication request", ex);
-            return false;
+            DEBUG.error("Error sending async auth request", ex);
         }
+        if (result == null) {
+            result = new HashMap<>();
+            result.put(Constants.AUTH_STATUS, AuthStatus.Failure);
+        }
+        return result;
     }
 
     public static Map makeAuthRequest(String username, String apiKey) {
@@ -101,15 +117,16 @@ public class AuthHelper {
             DEBUG.message("Invalid user: " + username);
             throw new IllegalArgumentException("invalid user");
         }
-        
-        if(!isValidAPIKey(apiKey)) {
+
+        if (!isValidAPIKey(apiKey)) {
             throw new IllegalArgumentException("invalid API key");
         }
 
         Map<String, String> request = new HashMap();
         request.put(Constants.API_KEY, apiKey);
         request.put(Constants.USERNAME, username);
-        request.put(Constants.COMMAND, Constants.USER_STATUS);
+        request.put(Constants.BROWSER_ID, UUID.randomUUID().toString());
+        request.put(Constants.DEVICE_NAME, "ForgeRock AM");
         return request;
     }
 
@@ -120,9 +137,23 @@ public class AuthHelper {
 
         return username.indexOf('@') >= 1;
     }
-    
-    public static boolean isValidAPIKey(String apiKey){
+
+    public static boolean isValidAPIKey(String apiKey) {
         return apiKey == null ? false : API_KEY_REGEX.matcher(apiKey).matches();
+    }
+
+    public static AuthStatus checkLoginToken(String loginToken, String url) {
+        try {
+            Map<String, String> request = new HashMap<>();
+            request.put(Constants.ASYNC_LOGIN_TOKEN, loginToken);
+            Map<String, Object> result = doPost(url, request, Map.class);
+            result = (Map) result.get(Constants.VALUE);
+            DEBUG.message(result.toString());
+            return AuthStatus.valueOf((String) result.get(Constants.AUTH_STATUS));
+        } catch (IOException ex) {
+            DEBUG.error("Error checking login token", ex);
+            return AuthStatus.Failure;
+        }
     }
 
 }

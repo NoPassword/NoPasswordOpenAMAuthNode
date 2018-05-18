@@ -27,17 +27,23 @@ public class Constants {
     //i18n properties
     public static final String UI_LOGIN_HEADER = "ui-login-header";
     public static final String UI_USERANAME_PROMPT = "ui-username-prompt";
-    
+
     //Authentication request attributes
     public static final String USERNAME = "Username";
     public static final String COMMAND = "Command";
     public static final String API_KEY = "APIKey";
     public static final String USER_STATUS = "UserStatus";
-    
+    public static final String BROWSER_ID = "BrowserId";
+    public static final String IP_ADDRESS = "IPAddress";
+    public static final String DEVICE_NAME = "DeviceName";
+
     //Authentication result attributes
     public static final String AUTH_STATUS = "AuthStatus";
-    public static final String SUCCESS = "Success";
-    
+    public static final String SUCCEEDED = "Succeeded";
+    public static final String VALUE = "Value";
+    public static final String MESSAGE = "Message";
+    public static final String ASYNC_LOGIN_TOKEN = "AsyncLoginToken";
+
     //config properties
     public static String AUTH_URL = "authUrl";
     public static String GENERIC_API_KEY = "genericApiKey";

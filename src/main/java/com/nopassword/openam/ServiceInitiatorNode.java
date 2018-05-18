@@ -18,17 +18,10 @@
  */
 package com.nopassword.openam;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.assistedinject.Assisted;
-import com.nopassword.common.crypto.NPCipher;
-import com.nopassword.common.model.AuthRequest;
-import com.nopassword.common.model.AuthResult;
-import com.nopassword.common.utils.Authentication;
+import com.nopassword.openam.AuthHelper.AuthStatus;
 import com.sun.identity.idm.AMIdentity;
 import com.sun.identity.shared.debug.Debug;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import org.forgerock.openam.annotations.sm.Attribute;
 import org.forgerock.openam.auth.node.api.*;
 import org.forgerock.openam.core.CoreWrapper;
@@ -37,8 +30,6 @@ import javax.inject.Inject;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import static org.forgerock.openam.auth.node.api.SharedStateConstants.REALM;
 import static org.forgerock.openam.auth.node.api.SharedStateConstants.USERNAME;
 
@@ -53,7 +44,8 @@ public class ServiceInitiatorNode extends AbstractDecisionNode {
     private final CoreWrapper coreWrapper;
     private final static String DEBUG_FILE_NAME = ServiceInitiatorNode.class.getSimpleName();
     private final Debug DEBUG = Debug.getInstance(DEBUG_FILE_NAME);
-    public static final String ASYNC_AUTH_URL = AuthHelper.BASE_URL + "v2/ID/Login/Async";
+    public static final String ASYNC_AUTH_URL = AuthHelper.BASE_URL + "/Auth/LoginAsync";
+    public static final String ENC_ASYNC_AUTH_URL = AuthHelper.BASE_URL + "/v2/ID/Login/Async";
     public static final String ASYNC_LOGIN_TOKEN = "AsyncLoginToken";
     public static final String AES_KEY = "aesKey";
     public static final String AES_IV = "aesIV";
@@ -64,13 +56,7 @@ public class ServiceInitiatorNode extends AbstractDecisionNode {
     public interface Config {
 
         @Attribute(order = 100)
-        String genericAPIkey();
-
-        @Attribute(order = 200)
-        String aesKey();
-
-        @Attribute(order = 300)
-        String aesIV();
+        String noPasswordLoginKey();
 
     }
 
@@ -126,15 +112,15 @@ public class ServiceInitiatorNode extends AbstractDecisionNode {
             return goTo(false).build();
         }
 
-        AuthRequest request = new AuthRequest(null, email, null);
-        byte[] aesKey = Base64.getDecoder().decode(config.aesKey());
-        byte[] aesIV = Base64.getDecoder().decode(config.aesIV());
-        NPCipher cipher = new NPCipher(aesKey, aesIV, StandardCharsets.UTF_16LE);
-        AuthResult result = Authentication.authenticateUserAsync(ASYNC_AUTH_URL, request, cipher);
+        Map<String, Object> result = AuthHelper.authenticateUser(email, ASYNC_AUTH_URL, config.noPasswordLoginKey());
         DEBUG.message(result.toString());
-        context.sharedState.add(ASYNC_LOGIN_TOKEN, result.getAsyncLoginToken());
-        context.sharedState.add(AES_KEY, config.aesKey());
-        context.sharedState.add(AES_IV, config.aesIV());
-        return goTo(true).build();
+        String status = (String) result.get(Constants.AUTH_STATUS);
+        if (AuthStatus.WaitingForResponse.name().equals(status)) {
+            context.sharedState.add(ASYNC_LOGIN_TOKEN, (String) result.get(Constants.ASYNC_LOGIN_TOKEN));
+            return goTo(true).build();
+        } else {
+            return goTo(false).build();
+        }
     }
+
 }

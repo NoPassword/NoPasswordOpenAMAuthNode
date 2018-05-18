@@ -18,14 +18,9 @@
  */
 package com.nopassword.openam;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.inject.assistedinject.Assisted;
-import com.nopassword.common.crypto.NPCipher;
-import com.nopassword.common.model.AuthStatus;
-import com.nopassword.common.utils.Authentication;
+import static com.nopassword.openam.AuthHelper.AuthStatus;
 import com.sun.identity.shared.debug.Debug;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import javax.inject.Inject;
 import org.forgerock.openam.auth.node.api.Action;
 import org.forgerock.openam.auth.node.api.Node;
@@ -41,7 +36,7 @@ import org.forgerock.openam.core.CoreWrapper;
         configClass = ServiceDecisionNode.Config.class)
 public class ServiceDecisionNode extends NoPasswordDecisionNode {
 
-    public static final String CHECK_LOGIN_TOKEN_URL = AuthHelper.BASE_URL + "v2/ID/Login/CheckLoginToken";
+    public static final String CHECK_LOGIN_TOKEN_URL = AuthHelper.BASE_URL + "/Auth/CheckLoginToken";
     private static final String DEBUG_FILE_NAME = ServiceDecisionNode.class.getSimpleName();
     private final Debug DEBUG = Debug.getInstance(DEBUG_FILE_NAME);
     private final ServiceDecisionNode.Config config;
@@ -69,26 +64,16 @@ public class ServiceDecisionNode extends NoPasswordDecisionNode {
 
     @Override
     public Action process(TreeContext context) {
-        try {
-            byte[] aesKey = Base64.getDecoder().decode(
-                    context.sharedState.get(ServiceInitiatorNode.AES_KEY).asString());
-            byte[] aesIV = Base64.getDecoder().decode(
-                    context.sharedState.get(ServiceInitiatorNode.AES_IV).asString());
-            NPCipher cipher = new NPCipher(aesKey, aesIV, StandardCharsets.UTF_16LE);
-            String loginToken = context.sharedState.get(ServiceInitiatorNode.ASYNC_LOGIN_TOKEN).asString();
-            AuthStatus status = Authentication.checkLoginToken(CHECK_LOGIN_TOKEN_URL, loginToken, cipher);
+        String loginToken = context.sharedState.get(ServiceInitiatorNode.ASYNC_LOGIN_TOKEN).asString();
+        AuthStatus status = AuthHelper.checkLoginToken(loginToken, CHECK_LOGIN_TOKEN_URL);
 
-            switch (status) {
-                case WaitingForResponse:
-                    return goTo(UNANSWERED_OUTCOME);
-                case Success:
-                    return goTo(TRUE_OUTCOME);
-                default:
-                    return goTo(FALSE_OUTCOME);
-            }
-        } catch (JsonProcessingException ex) {
-            DEBUG.error("An error has ocurred when checking the NoPassword login token", ex);
-            return goTo(FALSE_OUTCOME);
+        switch (status) {
+            case WaitingForResponse:
+                return goTo(UNANSWERED_OUTCOME);
+            case Success:
+                return goTo(TRUE_OUTCOME);
+            default:
+                return goTo(FALSE_OUTCOME);
         }
     }
 

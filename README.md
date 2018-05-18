@@ -9,12 +9,12 @@ This document assumes that you already have an AM 5.5+ instance running with an 
 
 Follow this steps in order to install the node:
 
-1. Download the jar file from [here](target/nopassword-openam-auth-node-1.0.jar). If you prefer to compile the project from sources then you'll have to install nopassword-commons dependency first with maven which can be downloaded [here](https://github.com/NoPasswordRepo/nopassword-commons.git).
+1. Download the jar file from [here](target/nopassword-openam-auth-node-1.0.jar).
 2. Copy the **nopassword-openam-auth-node-1.0.jar** file on your server: `/path/to/tomcat/webapps/openam/WEB-INF/lib`
 3. Restart AM.
-4. Login into NoPassword admin portal and open the `Keys` menu on the left side. Copy the **Generic API**, **AES Key** and **AES IV** values by clicking in the green button and save it for later.
+4. Login into NoPassword admin portal and open the `Keys` menu on the left side. Copy the **NoPassword Login** value by clicking in the green button and save it for later.
 
-![image alt text](/images/generic_api_key.png)
+![image alt text](/images/nopassword_login_key.png)
 
 5. Login into AM console as an administrator and go to `Realms > Top Level Real > Authentication > Trees`.
 6. Click on **Add Tree** button. Name the tree NoPassword and click **Create**.
@@ -26,7 +26,7 @@ Follow this steps in order to install the node:
 
 ![image](/images/tree_1.png)
 
-9. Select the NoPassword node and set the Generic API Key and AES keys. Paste the keys values from step 4 on the field on the right side.
+9. Select the NoPassword node and set the NoPassword Login Key. Paste the key value from step 4 on the field on the right side.
 10. Add 3 nodes: Polling Wait Node, NoPassword Service Decision and Success and connect them as show in the image below.
 
 ![image](/images/tree_2.png)

@@ -22,6 +22,7 @@ import com.google.inject.assistedinject.Assisted;
 import static com.nopassword.openam.AuthHelper.AuthStatus;
 import com.sun.identity.shared.debug.Debug;
 import javax.inject.Inject;
+import org.forgerock.openam.annotations.sm.Attribute;
 import org.forgerock.openam.auth.node.api.Action;
 import org.forgerock.openam.auth.node.api.Node;
 import org.forgerock.openam.auth.node.api.NodeProcessException;
@@ -36,7 +37,7 @@ import org.forgerock.openam.core.CoreWrapper;
         configClass = ServiceDecisionNode.Config.class)
 public class ServiceDecisionNode extends NoPasswordDecisionNode {
 
-    public static final String CHECK_LOGIN_TOKEN_URL = AuthHelper.BASE_URL + "/Auth/CheckLoginToken";
+//    public static final String CHECK_LOGIN_TOKEN_URL = AuthHelper.BASE_URL + "/Auth/CheckLoginToken";
     private static final String DEBUG_FILE_NAME = ServiceDecisionNode.class.getSimpleName();
     private final Debug DEBUG = Debug.getInstance(DEBUG_FILE_NAME);
     private final ServiceDecisionNode.Config config;
@@ -46,6 +47,10 @@ public class ServiceDecisionNode extends NoPasswordDecisionNode {
      * Configuration for the node.
      */
     public interface Config {
+        
+        @Attribute(order = 100)
+        String loginTokenEndpoint();
+
     }
 
     /**
@@ -65,7 +70,7 @@ public class ServiceDecisionNode extends NoPasswordDecisionNode {
     @Override
     public Action process(TreeContext context) {
         String loginToken = context.sharedState.get(ServiceInitiatorNode.ASYNC_LOGIN_TOKEN).asString();
-        AuthStatus status = AuthHelper.checkLoginToken(loginToken, CHECK_LOGIN_TOKEN_URL);
+        AuthStatus status = AuthHelper.checkLoginToken(loginToken, config.loginTokenEndpoint());
 
         switch (status) {
             case WaitingForResponse:

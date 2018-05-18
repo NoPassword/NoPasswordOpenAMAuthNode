@@ -44,7 +44,7 @@ public class ServiceInitiatorNode extends AbstractDecisionNode {
     private final CoreWrapper coreWrapper;
     private final static String DEBUG_FILE_NAME = ServiceInitiatorNode.class.getSimpleName();
     private final Debug DEBUG = Debug.getInstance(DEBUG_FILE_NAME);
-    public static final String ASYNC_AUTH_URL = AuthHelper.BASE_URL + "/Auth/LoginAsync";
+//    public static final String ASYNC_AUTH_URL = AuthHelper.BASE_URL + "/Auth/LoginAsync";
     public static final String ENC_ASYNC_AUTH_URL = AuthHelper.BASE_URL + "/v2/ID/Login/Async";
     public static final String ASYNC_LOGIN_TOKEN = "AsyncLoginToken";
     public static final String AES_KEY = "aesKey";
@@ -57,6 +57,9 @@ public class ServiceInitiatorNode extends AbstractDecisionNode {
 
         @Attribute(order = 100)
         String noPasswordLoginKey();
+        
+        @Attribute(order = 200)
+        String authEndpoint();
 
     }
 
@@ -112,7 +115,7 @@ public class ServiceInitiatorNode extends AbstractDecisionNode {
             return goTo(false).build();
         }
 
-        Map<String, Object> result = AuthHelper.authenticateUser(email, ASYNC_AUTH_URL, config.noPasswordLoginKey());
+        Map<String, Object> result = AuthHelper.authenticateUser(email, config.authEndpoint(), config.noPasswordLoginKey());
         DEBUG.message(result.toString());
         String status = (String) result.get(Constants.AUTH_STATUS);
         if (AuthStatus.WaitingForResponse.name().equals(status)) {

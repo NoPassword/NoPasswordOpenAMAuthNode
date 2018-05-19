@@ -43,13 +43,13 @@
         <dependency>
             <groupId>org.forgerock.am</groupId>
             <artifactId>openam-core</artifactId>
-            <version>6.0.0-M14</version>
+            <version>6.0.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.forgerock.am</groupId>
             <artifactId>auth-node-api</artifactId>
-            <version>6.0.0-M14</version>
+            <version>6.0.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

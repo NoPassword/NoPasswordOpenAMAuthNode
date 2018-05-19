@@ -91,10 +91,10 @@ public class AuthHelper {
         return mapper.readValue(input.toString(), resultType);
     }
 
-    public static Map<String, Object> authenticateUser(String username, String authURL, String genericAPIKey) {
+    public static Map<String, Object> authenticateUser(String username, String clientIp, String authURL, String genericAPIKey) {
         Map result = null;
         try {
-            Map request = makeAuthRequest(username, genericAPIKey);
+            Map request = makeAuthRequest(username, clientIp, genericAPIKey);
             result = doPost(authURL, request, Map.class);
 
             if ((boolean) result.get(Constants.SUCCEEDED)) {
@@ -112,7 +112,7 @@ public class AuthHelper {
         return result;
     }
 
-    public static Map makeAuthRequest(String username, String apiKey) {
+    public static Map makeAuthRequest(String username, String clientIp, String apiKey) {
         if (!isValidUsername(username)) {
             DEBUG.message("Invalid user: " + username);
             throw new IllegalArgumentException("invalid user");
@@ -127,6 +127,7 @@ public class AuthHelper {
         request.put(Constants.USERNAME, username);
         request.put(Constants.BROWSER_ID, UUID.randomUUID().toString());
         request.put(Constants.DEVICE_NAME, "ForgeRock AM");
+        request.put(Constants.IP_ADDRESS, clientIp);
         return request;
     }
 

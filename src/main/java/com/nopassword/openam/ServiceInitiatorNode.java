@@ -114,8 +114,9 @@ public class ServiceInitiatorNode extends AbstractDecisionNode {
             DEBUG.error("An error ocurred when getting user email: " + username, ex);
             return goTo(false).build();
         }
-
-        Map<String, Object> result = AuthHelper.authenticateUser(email, config.authEndpoint(), config.noPasswordLoginKey());
+        ;
+        Map<String, Object> result = AuthHelper.authenticateUser(
+                email, context.request.clientIp, config.authEndpoint(), config.noPasswordLoginKey());
         DEBUG.message(result.toString());
         String status = (String) result.get(Constants.AUTH_STATUS);
         if (AuthStatus.WaitingForResponse.name().equals(status)) {

@@ -16,10 +16,10 @@
 /**
  * Portions Copyright 2018 Wiacts Inc.
  */
-package com.nopassword.openam;
+package com.nopassword.openam.node;
 
 import com.google.inject.assistedinject.Assisted;
-import static com.nopassword.openam.AuthHelper.AuthStatus;
+import static com.nopassword.openam.node.AuthHelper.AuthStatus;
 import com.sun.identity.shared.debug.Debug;
 import javax.inject.Inject;
 import org.forgerock.openam.annotations.sm.Attribute;

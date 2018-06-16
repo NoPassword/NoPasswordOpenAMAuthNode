@@ -16,7 +16,7 @@
 /**
  * Portions Copyright 2018 Wiacts Inc.
  */
-package com.nopassword.openam;
+package com.nopassword.openam.node;
 
 /**
  *

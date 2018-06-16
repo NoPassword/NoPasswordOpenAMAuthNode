@@ -75,7 +75,7 @@
     </dependencies>
     
     <build>
-        <finalName>nopassword-openam-auth-node-${version}</finalName>
+        <finalName>nopassword-openam-auth-node-${project.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

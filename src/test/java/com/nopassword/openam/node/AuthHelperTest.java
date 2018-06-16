@@ -16,8 +16,10 @@
 /**
  * Portions Copyright 2018 Wiacts Inc.
  */
-package com.nopassword.openam;
+package com.nopassword.openam.node;
 
+import com.nopassword.openam.node.AuthHelper;
+import com.nopassword.openam.node.Constants;
 import java.util.Map;
 import org.testng.Assert;
 import org.testng.Assert.ThrowingRunnable;

@@ -16,11 +16,14 @@
 /**
  * Portions Copyright 2018 Wiacts Inc.
  */
-package com.nopassword.openam;
+package com.nopassword.openam.node;
 
 import com.google.inject.assistedinject.Assisted;
-import com.nopassword.openam.AuthHelper.AuthStatus;
+import com.iplanet.sso.SSOException;
+import com.nopassword.openam.node.AuthHelper.AuthStatus;
+import com.sun.identity.authentication.spi.AuthLoginException;
 import com.sun.identity.idm.AMIdentity;
+import com.sun.identity.idm.IdRepoException;
 import com.sun.identity.shared.debug.Debug;
 import org.forgerock.openam.annotations.sm.Attribute;
 import org.forgerock.openam.auth.node.api.*;
@@ -44,11 +47,7 @@ public class ServiceInitiatorNode extends AbstractDecisionNode {
     private final CoreWrapper coreWrapper;
     private final static String DEBUG_FILE_NAME = ServiceInitiatorNode.class.getSimpleName();
     private final Debug DEBUG = Debug.getInstance(DEBUG_FILE_NAME);
-//    public static final String ASYNC_AUTH_URL = AuthHelper.BASE_URL + "/Auth/LoginAsync";
-    public static final String ENC_ASYNC_AUTH_URL = AuthHelper.BASE_URL + "/v2/ID/Login/Async";
     public static final String ASYNC_LOGIN_TOKEN = "AsyncLoginToken";
-    public static final String AES_KEY = "aesKey";
-    public static final String AES_IV = "aesIV";
 
     /**
      * Configuration for the node.
@@ -57,7 +56,7 @@ public class ServiceInitiatorNode extends AbstractDecisionNode {
 
         @Attribute(order = 100)
         String noPasswordLoginKey();
-        
+
         @Attribute(order = 200)
         String authEndpoint();
 
@@ -79,7 +78,6 @@ public class ServiceInitiatorNode extends AbstractDecisionNode {
 
     @Override
     public Action process(TreeContext context) throws NodeProcessException {
-        String email;
         String username = context.sharedState.get(USERNAME).asString();
         AMIdentity userIdentity
                 = coreWrapper.getIdentity(
@@ -91,30 +89,16 @@ public class ServiceInitiatorNode extends AbstractDecisionNode {
             return goTo(false).build();
         }
 
+        String email;
         try {
-            Set<String> a = new HashSet<>();
-            a.add("mail");
-            a.add("email");
-            Map attrs = userIdentity.getAttributes(a);
-            HashSet<String> emailSet = (HashSet) attrs.get("mail");
-
-            if (!emailSet.isEmpty()) {
-                email = emailSet.iterator().next();
-            } else {
-                emailSet = (HashSet) attrs.get("email");
-
-                if (emailSet.isEmpty()) {
-                    DEBUG.error("user email not found: " + username);
-                    return goTo(false).build();
-                }
-
-                email = emailSet.iterator().next();
-            }
+            email = getEmail(userIdentity);
         } catch (Exception ex) {
-            DEBUG.error("An error ocurred when getting user email: " + username, ex);
+            DEBUG.error("Error retrieving user email", ex);
             return goTo(false).build();
         }
-        ;
+
+        DEBUG.message("email="+email);
+        
         Map<String, Object> result = AuthHelper.authenticateUser(
                 email, context.request.clientIp, config.authEndpoint(), config.noPasswordLoginKey());
         DEBUG.message(result.toString());
@@ -125,6 +109,53 @@ public class ServiceInitiatorNode extends AbstractDecisionNode {
         } else {
             return goTo(false).build();
         }
+    }
+
+    private String getEmail(AMIdentity userIdentity) throws AuthLoginException, IdRepoException, SSOException {
+        String email = "";
+        Set<String> a = new HashSet<>();
+        a.add("mail");
+        a.add("email");
+        Map attrs = userIdentity.getAttributes(a);
+        HashSet<String> emailSet = (HashSet) attrs.get("mail");
+
+        //check mail and email attributes
+        if (!emailSet.isEmpty()) {
+            email = emailSet.iterator().next();
+        } else {
+            emailSet = (HashSet) attrs.get("email");
+            if (!emailSet.isEmpty()) {
+                email = emailSet.iterator().next();
+            }
+        }
+
+        //if both mail and email are empty, then get email from dn
+        if (email == null || email.isEmpty()) {
+            Set<String> dnSet = userIdentity.getAttribute("dn");
+            email = getEmailFromDN(dnSet.iterator().next());    //userIdentity.getDn() return null!!!
+        }
+        return email;
+    }
+
+    private String getEmailFromDN(String dn) {
+        if (dn == null || !dn.contains("dc=")) {
+            return "";
+        }
+
+        String[] dc = dn.split(",dc=");
+        int eqIdx = dn.indexOf('=');
+        StringBuilder sb = new StringBuilder();
+        sb.append(dn.substring(eqIdx + 1, dn.indexOf(',', eqIdx)))
+                .append('@');
+
+        for (int i = 1; i < dc.length; i++) {
+            sb.append(dc[i]);
+
+            if (i < dc.length - 1) {
+                sb.append('.');
+            }
+        }
+        return sb.toString();
     }
 
 }

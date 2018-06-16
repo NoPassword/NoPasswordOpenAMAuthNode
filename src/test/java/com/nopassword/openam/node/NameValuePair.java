@@ -16,54 +16,38 @@
 /**
  * Portions Copyright 2018 Wiacts Inc.
  */
-package com.nopassword.openam;
-
-import java.util.List;
+package com.nopassword.openam.node;
 
 /**
  *
  * @author NoPassword
  */
-public class Callback {
+public class NameValuePair {
 
-    private String type;
-    private List<NameValuePair> input;
-    private List<NameValuePair> output;
+    private String name;
+    private String value;
 
-    public String getType() {
-        return type;
+    public String getName() {
+        return name;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public List<NameValuePair> getInput() {
-        return input;
+    public String getValue() {
+        return value;
     }
 
-    public void setInput(List<NameValuePair> input) {
-        this.input = input;
-    }
-
-    public List<NameValuePair> getOutput() {
-        return output;
-    }
-
-    public void setOutput(List<NameValuePair> output) {
-        this.output = output;
-    }
-
-    public void setInputValue(final String value) {
-        input.get(0).setValue(value);
+    public void setValue(String value) {
+        this.value = value;
     }
 
     @Override
     public String toString() {
-        return "Callback{" +
-                "type='" + type + '\'' +
-                ", input=" + input +
-                ", output=" + output +
-                '}';
+        return "NameValuePair{"
+                + "name='" + name + '\''
+                + ", value='" + value + '\''
+                + '}';
     }
 }

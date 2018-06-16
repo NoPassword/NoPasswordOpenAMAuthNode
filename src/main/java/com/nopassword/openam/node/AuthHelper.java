@@ -16,7 +16,7 @@
 /**
  * Portions Copyright 2018 Wiacts Inc.
  */
-package com.nopassword.openam;
+package com.nopassword.openam.node;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.identity.shared.debug.Debug;
@@ -38,7 +38,6 @@ import java.util.regex.Pattern;
  */
 public class AuthHelper {
 
-    public static final String BASE_URL = "https://api.nopassword.com";
     private static final Debug DEBUG = Debug.getInstance("AuthHelper");
     private static final Pattern API_KEY_REGEX = Pattern.compile("[a-z0-9-]{36,36}");
 
@@ -87,6 +86,7 @@ public class AuthHelper {
         while ((line = reader.readLine()) != null) {
             input.append(line);
         }
+        reader.close();
         conn.disconnect();
         return mapper.readValue(input.toString(), resultType);
     }

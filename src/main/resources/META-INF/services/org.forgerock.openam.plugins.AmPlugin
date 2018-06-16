@@ -14,4 +14,4 @@
 # Copyright 2017 ForgeRock AS.
 #
 
-com.nopassword.openam.NoPasswordNodePlugin
+com.nopassword.openam.node.NoPasswordNodePlugin

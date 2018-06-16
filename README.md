@@ -40,6 +40,6 @@ Follow this steps in order to install the node:
 14. Select the Retry Decision Limit and set the **Retry Limit** to 15.
 15. Save changes.
 16. You can test the NoPassword authentication tree by accessing this URL in your browser `https://YOUR_AM_SERVER HERE/openam/XUI/?realm=/#login/&service=NoPassword`.</br>
-17. Enter your username and hit enter. An authentication request will be send to NoPassword through the AM authentication tree. NoPassword will verify you username and key. If everything is correct you should get an authentication request on your phone.
+17. Enter your username and hit enter. NoPassword AM Module will search for user email (mail or email attribute) in the data store if email is empty an email address will be generated from user DN. An authentication request will be send to NoPassword through the AM module. NoPassword will verify you username and key. If everything is correct you should get an authentication request on your phone.
 
 ![image](/images/demo_auth.png)

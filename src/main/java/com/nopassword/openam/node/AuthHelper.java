@@ -129,7 +129,11 @@ public class AuthHelper {
         request.put(Constants.BROWSER_ID, UUID.randomUUID().toString());
         request.put(Constants.DEVICE_NAME, "ForgeRock AM");
         request.put(Constants.IP_ADDRESS, clientIp);
-        request.put(Constants.AUTHENTICATION_METHODS, new String[]{authMethod.name()});
+
+        if (!authMethod.equals(AuthenticationMethod.Default)) {
+            request.put(Constants.AUTHENTICATION_METHODS, new String[]{authMethod.name()});
+        }
+        
         return request;
     }
 

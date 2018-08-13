@@ -23,5 +23,5 @@ package com.nopassword.openam.node;
  * @author NoPassword
  */
 public enum AuthenticationMethod {
-    FaceLive, FaceVoice, Fingerprint, Pattern, Voice
+    Default, FaceLive, FaceVoice, Fingerprint, Pattern, Voice
 }

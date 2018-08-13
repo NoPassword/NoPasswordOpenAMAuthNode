@@ -27,7 +27,7 @@ Follow this steps in order to install the node:
 ![image](/images/tree_1.png)
 
 9. Select the **NoPassword Service Initiator** node and set the NoPassword Login Key. Paste the key value from step 4 on **NoPassword Login Key**. Set the following URL `https://api.nopassword.com/auth/loginAsync` in **Authentication Endpoint**.
-10. Select the **Authentication Method** that you'd like to use. If you leave it as **Default** then the **Authentication Method** will be the one selected by users.
+10. Select the **Authentication Method** you'd like to use. If you leave it as **Default** then the **Authentication Method** will be the one selected by users.
 11. Add 3 nodes: Polling Wait Node, NoPassword Service Decision and Success and connect them as show in the image below.
 
 ![image](/images/tree_2.png)

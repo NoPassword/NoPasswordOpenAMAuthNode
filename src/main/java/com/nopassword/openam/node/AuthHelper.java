@@ -91,10 +91,11 @@ public class AuthHelper {
         return mapper.readValue(input.toString(), resultType);
     }
 
-    public static Map<String, Object> authenticateUser(String username, String clientIp, String authURL, String genericAPIKey) {
+    public static Map<String, Object> authenticateUser(String username, String clientIp,
+            String authURL, String genericAPIKey, AuthenticationMethod authMethod) {
         Map result = null;
         try {
-            Map request = makeAuthRequest(username, clientIp, genericAPIKey);
+            Map request = makeAuthRequest(username, clientIp, genericAPIKey, authMethod);
             result = doPost(authURL, request, Map.class);
 
             if ((boolean) result.get(Constants.SUCCEEDED)) {
@@ -112,7 +113,7 @@ public class AuthHelper {
         return result;
     }
 
-    public static Map makeAuthRequest(String username, String clientIp, String apiKey) {
+    public static Map makeAuthRequest(String username, String clientIp, String apiKey, AuthenticationMethod authMethod) {
         if (!isValidUsername(username)) {
             DEBUG.message("Invalid user: " + username);
             throw new IllegalArgumentException("invalid user");
@@ -122,12 +123,13 @@ public class AuthHelper {
             throw new IllegalArgumentException("invalid API key");
         }
 
-        Map<String, String> request = new HashMap();
+        Map<String, Object> request = new HashMap();
         request.put(Constants.API_KEY, apiKey);
         request.put(Constants.USERNAME, username);
         request.put(Constants.BROWSER_ID, UUID.randomUUID().toString());
         request.put(Constants.DEVICE_NAME, "ForgeRock AM");
         request.put(Constants.IP_ADDRESS, clientIp);
+        request.put(Constants.AUTHENTICATION_METHODS, new String[]{authMethod.name()});
         return request;
     }
 
@@ -143,15 +145,17 @@ public class AuthHelper {
         return apiKey == null ? false : API_KEY_REGEX.matcher(apiKey).matches();
     }
 
-    public static AuthStatus checkLoginToken(String loginToken, String url) {
+    public static AuthStatus checkLoginToken(String username, String loginToken, String url) {
         try {
             Map<String, String> request = new HashMap<>();
             request.put(Constants.ASYNC_LOGIN_TOKEN, loginToken);
+            request.put(Constants.USERNAME, username);
             Map<String, Object> result = doPost(url, request, Map.class);
+            DEBUG.message("result=" + result);
             result = (Map) result.get(Constants.VALUE);
-            DEBUG.message(result.toString());
+//            DEBUG.message(result.toString());
             return AuthStatus.valueOf((String) result.get(Constants.AUTH_STATUS));
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             DEBUG.error("Error checking login token", ex);
             return AuthStatus.Failure;
         }

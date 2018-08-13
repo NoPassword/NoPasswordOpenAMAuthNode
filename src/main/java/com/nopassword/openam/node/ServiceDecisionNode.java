@@ -69,8 +69,9 @@ public class ServiceDecisionNode extends NoPasswordDecisionNode {
 
     @Override
     public Action process(TreeContext context) {
-        String loginToken = context.sharedState.get(ServiceInitiatorNode.ASYNC_LOGIN_TOKEN).asString();
-        AuthStatus status = AuthHelper.checkLoginToken(loginToken, config.loginTokenEndpoint());
+        String username = context.sharedState.get(Constants.USERNAME).asString();
+        String loginToken = context.sharedState.get(Constants.ASYNC_LOGIN_TOKEN).asString();
+        AuthStatus status = AuthHelper.checkLoginToken(username, loginToken, config.loginTokenEndpoint());
 
         switch (status) {
             case WaitingForResponse:

@@ -45,8 +45,9 @@ public class Constants {
     public static final String ASYNC_LOGIN_TOKEN = "AsyncLoginToken";
 
     //config properties
-    public static String AUTH_URL = "authUrl";
-    public static String GENERIC_API_KEY = "genericApiKey";
-    public static String EMAIL_DOMAIN = "emailDomain";
+    public static final String AUTH_URL = "authUrl";
+    public static final String GENERIC_API_KEY = "genericApiKey";
+    public static final String EMAIL_DOMAIN = "emailDomain";
+    public static final String AUTHENTICATION_METHODS = "AuthenticationMethods";
 
 }

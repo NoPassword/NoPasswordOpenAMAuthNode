@@ -25,6 +25,7 @@ import com.sun.identity.authentication.spi.AuthLoginException;
 import com.sun.identity.idm.AMIdentity;
 import com.sun.identity.idm.IdRepoException;
 import com.sun.identity.shared.debug.Debug;
+import com.sun.identity.sm.RequiredValueValidator;
 import org.forgerock.openam.annotations.sm.Attribute;
 import org.forgerock.openam.auth.node.api.*;
 import org.forgerock.openam.core.CoreWrapper;
@@ -47,18 +48,20 @@ public class ServiceInitiatorNode extends AbstractDecisionNode {
     private final CoreWrapper coreWrapper;
     private final static String DEBUG_FILE_NAME = ServiceInitiatorNode.class.getSimpleName();
     private final Debug DEBUG = Debug.getInstance(DEBUG_FILE_NAME);
-    public static final String ASYNC_LOGIN_TOKEN = "AsyncLoginToken";
 
     /**
      * Configuration for the node.
      */
     public interface Config {
 
-        @Attribute(order = 100)
+        @Attribute(order = 100, validators = {RequiredValueValidator.class})
         String noPasswordLoginKey();
 
-        @Attribute(order = 200)
+        @Attribute(order = 200, validators = {RequiredValueValidator.class})
         String authEndpoint();
+
+        @Attribute(order = 300, validators = {RequiredValueValidator.class})
+        AuthenticationMethod authMethod();
 
     }
 
@@ -97,14 +100,17 @@ public class ServiceInitiatorNode extends AbstractDecisionNode {
             return goTo(false).build();
         }
 
-        DEBUG.message("email="+email);
-        
+        DEBUG.message("email=" + email);
+
         Map<String, Object> result = AuthHelper.authenticateUser(
-                email, context.request.clientIp, config.authEndpoint(), config.noPasswordLoginKey());
+                email, context.request.clientIp, config.authEndpoint(),
+                config.noPasswordLoginKey(), config.authMethod());
         DEBUG.message(result.toString());
         String status = (String) result.get(Constants.AUTH_STATUS);
+        
         if (AuthStatus.WaitingForResponse.name().equals(status)) {
-            context.sharedState.add(ASYNC_LOGIN_TOKEN, (String) result.get(Constants.ASYNC_LOGIN_TOKEN));
+            context.sharedState.add(Constants.ASYNC_LOGIN_TOKEN, (String) result.get(Constants.ASYNC_LOGIN_TOKEN));
+            context.sharedState.add(Constants.USERNAME, email);
             return goTo(true).build();
         } else {
             return goTo(false).build();

@@ -9,7 +9,7 @@ This document assumes that you already have an AM 5.5+ instance running with an 
 
 Follow this steps in order to install the node:
 
-1. Download the jar file from [here](target/nopassword-openam-auth-node-1.0.jar).
+1. Download the jar file from [here](https://github.com/NoPasswordRepo/NoPasswordOpenAMAuthNode/blob/master/target/nopassword-openam-auth-node-1.0.jar).
 2. Copy the **nopassword-openam-auth-node-1.0.jar** file on your server: `/path/to/tomcat/webapps/openam/WEB-INF/lib`
 3. Restart AM.
 4. Login into NoPassword admin portal and open the `Keys` menu on the left side. Copy the **NoPassword Login** value by clicking in the green button and save it for later.

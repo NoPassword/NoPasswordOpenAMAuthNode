@@ -14,7 +14,7 @@
  * Copyright 2017 ForgeRock AS.
  */
 /**
- * Portions Copyright 2018 Wiacts Inc.
+ * Portions Copyright 2018 NoPassword Inc.
  */
 package com.nopassword.openam.node;
 

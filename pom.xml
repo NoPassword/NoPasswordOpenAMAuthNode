@@ -16,7 +16,7 @@
    your own identifying information:
    "Portions Copyrighted [year] [name of copyright owner]"
 -->
-<!--Portions Copyright 2018 Wiacts Inc.-->
+<!--Portions Copyright 2018 NoPassword Inc.-->
 <project xmlns="http://maven.apache.org/POM/4.0.0" 
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -84,7 +84,7 @@
                 <configuration>
                     <archive>
                         <manifest-entries>
-                            <Built-By>Wiacts Inc.</Built-By>
+                            <Built-By>NoPassword Inc.</Built-By>
                         </manifest-entries>
                     </archive>
                 </configuration>
@@ -98,6 +98,29 @@
                         <goals>
                             <goal>integration-test</goal>
                             <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>1.16</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <descriptors>
+                        <descriptor>src/assembly/build-batch.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
                         </goals>
                     </execution>
                 </executions>

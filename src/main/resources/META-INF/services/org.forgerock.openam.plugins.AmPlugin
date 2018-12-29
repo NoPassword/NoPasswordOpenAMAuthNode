@@ -13,5 +13,5 @@
 #
 # Copyright 2017 ForgeRock AS.
 #
-
+# Portions Copyright 2018 NoPassword Inc.
 com.nopassword.openam.node.NoPasswordNodePlugin
